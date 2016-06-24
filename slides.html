@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<title>The Levenshtein Difference</title>
+
+<meta name="description" content="The Levenshtein Difference">
+
+  <meta name="author" content="Lyndon Maydwell" />
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <link rel="stylesheet" href="reveal.js/css/theme/black.css" id="theme">
+
+
+<!-- For syntax highlighting -->
+  <link rel="stylesheet" href="reveal.js/lib/css/zenburn.css">
+
+  <script src="jquery-3.0.0.js"></script>
+  <script src="levenshtein-transition.js"></script>
+  <script>
+  	$(document).ready(function(){
+  		var h1 = $('h1').first()
+  		h1.css({background: 'red'})
+  		h1.levenshteinTransitions({delay: 2000, targetPhrases: ['The Levenshtein Distance']})
+  		$(".transition").each(function(){
+  			var x = $(this);
+  			x.levenshteinTransitions({delay: 2000, targetPhrases: [x.attr('data-to')]})
+  		})
+  	})
+  </script>
+</head>
+
+<body>
+
+<div class="reveal">
+
+<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+<section>
+<h1>The Levenshtein Difference</h1>
+<h3>Lyndon Maydwell</h3>
+<p>
+<h4>2016, MFUG</h4>
+</p>
+<p style="font-size: 80%;"><a href="https://github.com/sordina/mfug_levenshtein_difference_2016_07_07-">https://github.com/sordina/mfug_levenshtein_difference_2016_07_07-</a></p>
+</section>
+
+
+<section id="what-is-it" class="level1">
+<h1>What is it?</h1>
+<section id="an-edit-distance" class="level2">
+<h2>An Edit-Distance</h2>
+<p class="transition" data-to="Between two things">
+Between two strings
+</p>
+<p>Imagine that you had to edit one string into another, with costs associated with editor actions.</p>
+<ul>
+<li>Movement costs 0 points</li>
+<li>Replacement, Deletion, and Insertion cost 1 point</li>
+</ul>
+</section>
+<section id="an-edit-distance-1" class="level2">
+<h2>An Edit-Distance</h2>
+<blockquote>
+<p>&quot;hello world&quot; ▻ &quot;hello swirled&quot;</p>
+</blockquote>
+<p class="transition" data-to="hello swirled">
+hello world
+</p>
+<pre><code>▻hello world 0  hell▻o world  0  hello sw▻orld 0  hello swirl▻d  0
+h▻ello world 0  hello▻ world  0  hello sw▻rld  1  hello swirle▻d 1
+he▻llo world 0  hello ▻world  0  hello swi▻rld 1  hello swirled▻ 0
+hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
+<blockquote>
+<p>4 points</p>
+</blockquote>
+</section>
+<section id="but-optimal" class="level2">
+<h2>But Optimal</h2>
+<p>Finds the smallest edit distance.</p>
+</section>
+<section id="various-implementations" class="level2">
+<h2>Various Implementations</h2>
+</section>
+</section>
+<section id="memoization" class="level1">
+<h1>Memoization</h1>
+<section id="asdf" class="level2">
+<h2>asdf</h2>
+</section>
+</section>
+<section id="laziness" class="level1">
+<h1>Laziness</h1>
+<section id="bli-bla" class="level2">
+<h2>Bli bla</h2>
+</section>
+</section>
+</div>
+
+<script src="reveal.js/lib/js/head.min.js"></script>
+<script src="reveal.js/js/reveal.js"></script>
+
+<script>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: false,
+  // available themes are in /css/theme
+      theme: Reveal.getQueryHash().theme || 'black', 
+    // default/cube/page/concave/zoom/linear/fade/none
+      transition: Reveal.getQueryHash().transition || 'linear',
+    // Optional libraries used to extend on reveal.js
+  dependencies: [
+    { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+    { src: 'reveal.js/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+    { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+    { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+    { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+  });
+</script>
+
+</body>
+</html>

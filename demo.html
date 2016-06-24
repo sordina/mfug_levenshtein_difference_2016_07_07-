@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+
+<html>
+
+	<head>
+		<title> Testing levenshtein-transition.js </title>
+		<script src="jquery-3.0.0.js"></script>
+	</head>
+
+	<body>
+
+		<div class="transition">phrase one</div>
+		<div class="transition">phrase two</div>
+		<div class="transitions">phrase three</div>
+		<div class="transitions">phrase four</div>
+
+		<script src="levenshtein-transition.js"></script>
+
+		<script>
+
+			$('.transition').css({color: 'red'});
+			$('.transition').levenshteinTransition({targetPhrase: "New-Phrase"})
+
+			$('.transitions').css({color: 'blue'});
+			$('.transitions').levenshteinTransitions({delay: 1000, targetPhrases: ["New-Phrase 1", "New-Phrase 2"]})
+
+		</script>
+
+	</body>
+
+</html>

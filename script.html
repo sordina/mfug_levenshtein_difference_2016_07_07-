@@ -1,0 +1,13 @@
+<script src="jquery-3.0.0.js"></script>
+<script src="levenshtein-transition.js"></script>
+<script>
+	$(document).ready(function(){
+		var h1 = $('h1').first()
+		h1.css({background: 'red'})
+		h1.levenshteinTransitions({delay: 2000, targetPhrases: ['The Levenshtein Distance']})
+		$(".transition").each(function(){
+			var x = $(this);
+			x.levenshteinTransitions({delay: 2000, targetPhrases: [x.attr('data-to')]})
+		})
+	})
+</script>
