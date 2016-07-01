@@ -35,6 +35,11 @@ Finds the smallest edit distance.
 
 ## Various Implementations
 
+* Naively Recursive
+* Full Matrix
+* Two row itterative matrix
+* Approximately
+
 # Memoization
 
 ## asdf
