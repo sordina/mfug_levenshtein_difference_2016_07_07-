@@ -53,6 +53,23 @@
 </section>
 
 
+<section id="so..." class="level1">
+<h1>So...</h1>
+<section id="i-wanted-to-make-a-change-to-silverpond.com.au" class="level2">
+<h2>I wanted to make a change to <a href="http://silverpond.com.au">silverpond.com.au</a></h2>
+<p>It used to say &quot;we do data-science&quot;...</p>
+<figure>
+<img src="images/silverpond.png" alt="" />
+</figure>
+<p>But we do many things!</p>
+</section>
+<section id="an-idea..." class="level2">
+<h2>An idea...</h2>
+<p>I thought a fun idea might be to have this text rewrite itself to various declarations.</p>
+<p>But how should it go about doing this?</p>
+<p>I wanted it to look like the text was being edited, so immediately I thought of the Levenshtein-distance algorithm.</p>
+</section>
+</section>
 <section id="what-is-it" class="level1">
 <h1>What is it?</h1>
 <section id="an-edit-distance" class="level2">
@@ -84,7 +101,7 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 </section>
 <section id="but-optimal" class="level2">
 <h2>But Optimal</h2>
-<p>Finds the smallest edit distance.</p>
+<p>Levenshtein-distance finds the smallest edit distance.</p>
 </section>
 <section id="various-implementations" class="level2">
 <h2>Various Implementations</h2>
@@ -92,8 +109,31 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <li>Naively Recursive</li>
 <li>Full Matrix</li>
 <li>Two row itterative matrix</li>
-<li>Approximately</li>
+<li>Approximate</li>
 </ul>
+</section>
+<section id="but-crucially...-we-are-interested-in-reconstructing-the-edits" class="level2">
+<h2>But crucially... We are interested in reconstructing the edits!</h2>
+<p>A score isn't enough on its own, as the design goal is to have the intermediate edits of the text displayed to the user.</p>
+</section>
+<section id="full-matrix" class="level2">
+<h2>Full-Matrix</h2>
+<p>The full-matrix implementation of Levenshtein-distance allows for this.</p>
+</section>
+<section id="full-matrix-implementation" class="level2">
+<h2>Full-Matrix Implementation</h2>
+<p>The values in the matrix describe the score for the edits to that point.</p>
+<pre><code>+---------+---------+
+|         |         |
+|   &lt;---- |    ^    |  Options include:
+|   N/S   \  I |    |
+|         |\   |    |  * (N) Nothing
++---------+-\ -| ---+  * (S) Substitution
+|         |  \ |    |  * (I) Insertion
+|   D     |   \|    |  * (D) Deletion
+|   &lt;----------?    |
+|         |         |
++---------+---------+</code></pre>
 </section>
 </section>
 <section id="memoization" class="level1">

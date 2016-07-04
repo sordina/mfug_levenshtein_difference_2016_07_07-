@@ -5,6 +5,26 @@ author: "Lyndon Maydwell"
 link: "https://github.com/sordina/mfug_levenshtein_difference_2016_07_07-"
 ---
 
+# So...
+
+## I wanted to make a change to [silverpond.com.au](http://silverpond.com.au)
+
+It used to say "we do data-science"...
+
+![](images/silverpond.png)
+
+But we do many things!
+
+## An idea...
+
+I thought a fun idea might be to have this text rewrite itself to various
+declarations.
+
+But how should it go about doing this?
+
+I wanted it to look like the text was being edited, so immediately I thought of
+the Levenshtein-distance algorithm.
+
 # What is it?
 
 ## An Edit-Distance
@@ -31,14 +51,39 @@ Imagine that you had to edit one string into another, with costs associated with
 
 ## But Optimal
 
-Finds the smallest edit distance.
+Levenshtein-distance finds the smallest edit distance.
 
 ## Various Implementations
 
 * Naively Recursive
 * Full Matrix
 * Two row itterative matrix
-* Approximately
+* Approximate
+
+## But crucially... We are interested in reconstructing the edits!
+
+A score isn't enough on its own, as the design goal is to have
+the intermediate edits of the text displayed to the user.
+
+## Full-Matrix
+
+The full-matrix implementation of Levenshtein-distance allows for this.
+
+## Full-Matrix Implementation
+
+The values in the matrix describe the score for the edits to that point.
+
+    +---------+---------+
+    |         |         |
+    |   <---- |    ^    |  Options include:
+    |   N/S   \  I |    |
+    |         |\   |    |  * (N) Nothing
+    +---------+-\ -| ---+  * (S) Substitution
+    |         |  \ |    |  * (I) Insertion
+    |   D     |   \|    |  * (D) Deletion
+    |   <----------?    |
+    |         |         |
+    +---------+---------+
 
 # Memoization
 
