@@ -85,7 +85,7 @@ reconstructing intermediate edits.
 
                          --> Insertion
                   TO: R  A  B  B  I  T       Example: "CAT" -> "RABBIT"
-
+       M
                  +--+--+--+--+--+--+--+      Cells contain a score
                  | 0| 1| 2| 3| 4| 5| 6|      that indicates
                  +--+--+--+--+--+--+--+      the cost of editing
@@ -122,15 +122,16 @@ corresponding to four possible edits.
         |    ^    |                           "First Row"
         |  D |    |    Options include:       +---------+---------+
         |    |    |                           |         |         |
-        +-- -| ---+    * (I) Insertion (+1)   |   I     |         |
-        |    |    |    * (D) Deletion  (+1)   |   <--------M[i,0] |
-        |    |    |                           |         |         |
-        | M[0,j]  |                           +---------+---------+
-        |         |
+        +-- -| ---+    * (I) Insertion (+1)   |   I     |         | .
+        |    |    |    * (D) Deletion  (+1)   |   <--------M[i,0] | .
+        |    |    | .                         |         |         | .
+        | M[0,j]  | .                         +---------+---------+
+        |         | .                          .  .  .
         +---------+
+          .  .  .
 
 * M[0,0] has a score of 0,
-* Only Insertion/Deletion apply for M[i,0] and M[0,j]
+* M[i,0] = Insertion &amp; M[0,j] = Deletion
 * &#8756; M[i,0] = i and M[0,j] = j
 
 ## Inductive Definition
@@ -141,7 +142,7 @@ scores of all cells of the matrix!
 For String F, String T:
 
 * M[0,0] = 0
-* M[i,j] = M[i-1,j-1] if F[j] = T[i], otherwise
+* M[i,j] = M[i-1,j-1] <span style="color:red;">if</span> F[j] = T[i], <span style="color:red;">otherwise</span>
 * M[i,j] = 1 + Minimum( M[i,j-1], M[i-1,j], M[i-1,j-1] )
 
 ## Spanning Tree
@@ -149,7 +150,7 @@ For String F, String T:
 | | | | | | | |
 | --- | --- | --- | --- | --- | --- | --- |
 | <span style="color:red;">0</span> | <span style="color:red;">←</span> | ← | ← | ← | ← | ←
-| ↑ | ↑ | <span style="color:red;">↖</span> | <span style="color:red;">↑</span> | <span style="color:red;">←</span> | ← | ←
+| ↑ | ↑ | <span style="color:red;">↖</span> | <span style="color:red;">←</span> | <span style="color:red;">←</span> | ← | ←
 | ↑ | ← | ↖ | ← | ← | <span style="color:red;">↖</span> | <span style="color:red;">←</span>
 | ↑ | ← | ↑ | ← | ↑ | ← | <span style="color:red;">↑</span>
 
@@ -158,7 +159,7 @@ M.
 
 ## The Final Score
 
-For Words 'F', 'T':
+For words F, T:
 
 The final score is the value in the last cell...
 
@@ -166,7 +167,7 @@ M[Length(T), Length(F)]
 
 ## Code
 
-    mft f t = m where
+    mft f t   = m where
       m       = array b [ ((i, j), lev i j) | (i,j) <- range b ]
       b       = ((0, 0), (length t, length f))
       lev 0 0 = 0
@@ -175,10 +176,10 @@ M[Length(T), Length(F)]
       lev i j | match     = m ! (pred i, pred j)
               | otherwise = 1 + minimum [ left, up, diag ]
           where
-              match = (f !! pred j) == (t !! pred i)
-              left  = m ! (pred i,      j)
-              up    = m ! (     i, pred j)
-              diag  = m ! (pred i, pred j)
+          match = (f !! pred j) == (t !! pred i)
+          left  = m ! (pred i,      j)
+          up    = m ! (     i, pred j)
+          diag  = m ! (pred i, pred j)
 
     score f t = mft f t ! (length t, length f)
 
@@ -188,14 +189,24 @@ Almost a literal translation.
 
 ## We don't just want the score...
 
-               {
-                 score :: Int,
-                 state :: Text
-               }
-
 Since the branching corresponds to semantic editing actions,
 you can keep an editing state in each cell, rather than just track
 the score.
+
+## We want the state.
+
+        data Cell = C {
+                    score :: Int,
+                    state :: Text
+                  }
+
+## And we want a path
+
+        type Path = [ Cell ]
+
+## Then we can adjust our functions
+
+To deal with paths rather than scores.
 
 # Memoization
 

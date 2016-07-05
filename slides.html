@@ -132,7 +132,7 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <h2>The values in the matrix describe the edit score.</h2>
 <pre><code>                     --&gt; Insertion
               TO: R  A  B  B  I  T       Example: &quot;CAT&quot; -&gt; &quot;RABBIT&quot;
-
+   M
              +--+--+--+--+--+--+--+      Cells contain a score
              | 0| 1| 2| 3| 4| 5| 6|      that indicates
              +--+--+--+--+--+--+--+      the cost of editing
@@ -166,15 +166,16 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
     |    ^    |                           &quot;First Row&quot;
     |  D |    |    Options include:       +---------+---------+
     |    |    |                           |         |         |
-    +-- -| ---+    * (I) Insertion (+1)   |   I     |         |
-    |    |    |    * (D) Deletion  (+1)   |   &lt;--------M[i,0] |
-    |    |    |                           |         |         |
-    | M[0,j]  |                           +---------+---------+
-    |         |
-    +---------+</code></pre>
+    +-- -| ---+    * (I) Insertion (+1)   |   I     |         | .
+    |    |    |    * (D) Deletion  (+1)   |   &lt;--------M[i,0] | .
+    |    |    | .                         |         |         | .
+    | M[0,j]  | .                         +---------+---------+
+    |         | .                          .  .  .
+    +---------+
+      .  .  .</code></pre>
 <ul>
 <li>M[0,0] has a score of 0,</li>
-<li>Only Insertion/Deletion apply for M[i,0] and M[0,j]</li>
+<li>M[i,0] = Insertion &amp; M[0,j] = Deletion</li>
 <li>∴ M[i,0] = i and M[0,j] = j</li>
 </ul>
 </section>
@@ -184,7 +185,7 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <p>For String F, String T:</p>
 <ul>
 <li>M[0,0] = 0</li>
-<li>M[i,j] = M[i-1,j-1] if F[j] = T[i], otherwise</li>
+<li>M[i,j] = M[i-1,j-1] <span style="color:red;">if</span> F[j] = T[i], <span style="color:red;">otherwise</span></li>
 <li>M[i,j] = 1 + Minimum( M[i,j-1], M[i-1,j], M[i-1,j-1] )</li>
 </ul>
 </section>
@@ -205,7 +206,7 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <td style="text-align: left;">↑</td>
 <td style="text-align: left;">↑</td>
 <td style="text-align: left;"><span style="color:red;">↖</span></td>
-<td style="text-align: left;"><span style="color:red;">↑</span></td>
+<td style="text-align: left;"><span style="color:red;">←</span></td>
 <td style="text-align: left;"><span style="color:red;">←</span></td>
 <td style="text-align: left;">←</td>
 <td style="text-align: left;">←</td>
@@ -234,13 +235,13 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 </section>
 <section id="the-final-score" class="level2">
 <h2>The Final Score</h2>
-<p>For Words 'F', 'T':</p>
+<p>For words F, T:</p>
 <p>The final score is the value in the last cell...</p>
 <p>M[Length(T), Length(F)]</p>
 </section>
 <section id="code" class="level2">
 <h2>Code</h2>
-<pre><code>mft f t = m where
+<pre><code>mft f t   = m where
   m       = array b [ ((i, j), lev i j) | (i,j) &lt;- range b ]
   b       = ((0, 0), (length t, length f))
   lev 0 0 = 0
@@ -249,10 +250,10 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
   lev i j | match     = m ! (pred i, pred j)
           | otherwise = 1 + minimum [ left, up, diag ]
       where
-          match = (f !! pred j) == (t !! pred i)
-          left  = m ! (pred i,      j)
-          up    = m ! (     i, pred j)
-          diag  = m ! (pred i, pred j)
+      match = (f !! pred j) == (t !! pred i)
+      left  = m ! (pred i,      j)
+      up    = m ! (     i, pred j)
+      diag  = m ! (pred i, pred j)
 
 score f t = mft f t ! (length t, length f)</code></pre>
 <p>Almost a literal translation.</p>
@@ -262,11 +263,22 @@ score f t = mft f t ! (length t, length f)</code></pre>
 <h1>Reconstruction</h1>
 <section id="we-dont-just-want-the-score..." class="level2">
 <h2>We don't just want the score...</h2>
-<pre><code>           {
-             score :: Int,
-             state :: Text
-           }</code></pre>
 <p>Since the branching corresponds to semantic editing actions, you can keep an editing state in each cell, rather than just track the score.</p>
+</section>
+<section id="we-want-the-state." class="level2">
+<h2>We want the state.</h2>
+<pre><code>    data Cell = C {
+                score :: Int,
+                state :: Text
+              }</code></pre>
+</section>
+<section id="and-we-want-a-path" class="level2">
+<h2>And we want a path</h2>
+<pre><code>    type Path = [ Cell ]</code></pre>
+</section>
+<section id="then-we-can-adjust-our-functions" class="level2">
+<h2>Then we can adjust our functions</h2>
+<p>To deal with paths rather than scores.</p>
 </section>
 </section>
 <section id="memoization" class="level1">

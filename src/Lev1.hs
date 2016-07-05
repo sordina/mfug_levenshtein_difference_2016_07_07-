@@ -13,11 +13,11 @@ mft f t = m
   lev   i 0 = succ $ m ! (pred i, 0     )
   lev   i j | match     = m ! (pred i, pred j)
             | otherwise = 1 + minimum [ left, up, diag ]
-            where
-            match = (f !! pred j) == (t !! pred i)
-            left  = m ! (pred i,      j)
-            up    = m ! (     i, pred j)
-            diag  = m ! (pred i, pred j)
+        where
+        match = (f !! pred j) == (t !! pred i)
+        left  = m ! (pred i,      j)
+        up    = m ! (     i, pred j)
+        diag  = m ! (pred i, pred j)
 
 score :: String -> String -> Int
 score f t = mft f t ! (length t, length f)
