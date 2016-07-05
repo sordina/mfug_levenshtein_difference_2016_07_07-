@@ -238,6 +238,25 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <p>The final score is the value in the last cell...</p>
 <p>M[Length(T), Length(F)]</p>
 </section>
+<section id="code" class="level2">
+<h2>Code</h2>
+<pre><code>mft f t = m where
+  m       = array b [ ((i, j), lev i j) | (i,j) &lt;- range b ]
+  b       = ((0, 0), (length t, length f))
+  lev 0 0 = 0
+  lev 0 j = succ $ m ! (0     , pred j)
+  lev i 0 = succ $ m ! (pred i, 0     )
+  lev i j | match     = m ! (pred i, pred j)
+          | otherwise = 1 + minimum [ left, up, diag ]
+      where
+          match = (f !! pred j) == (t !! pred i)
+          left  = m ! (pred i,      j)
+          up    = m ! (     i, pred j)
+          diag  = m ! (pred i, pred j)
+
+score f t = mft f t ! (length t, length f)</code></pre>
+<p>Almost a literal translation.</p>
+</section>
 </section>
 <section id="reconstruction" class="level1">
 <h1>Reconstruction</h1>

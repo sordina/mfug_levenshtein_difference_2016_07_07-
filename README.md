@@ -164,6 +164,26 @@ The final score is the value in the last cell...
 
 M[Length(T), Length(F)]
 
+## Code
+
+    mft f t = m where
+      m       = array b [ ((i, j), lev i j) | (i,j) <- range b ]
+      b       = ((0, 0), (length t, length f))
+      lev 0 0 = 0
+      lev 0 j = succ $ m ! (0     , pred j)
+      lev i 0 = succ $ m ! (pred i, 0     )
+      lev i j | match     = m ! (pred i, pred j)
+              | otherwise = 1 + minimum [ left, up, diag ]
+          where
+              match = (f !! pred j) == (t !! pred i)
+              left  = m ! (pred i,      j)
+              up    = m ! (     i, pred j)
+              diag  = m ! (pred i, pred j)
+
+    score f t = mft f t ! (length t, length f)
+
+Almost a literal translation.
+
 # Reconstruction
 
 ## We don't just want the score...
