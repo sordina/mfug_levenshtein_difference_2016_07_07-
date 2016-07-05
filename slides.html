@@ -67,17 +67,19 @@
 <h2>An idea...</h2>
 <p>I thought a fun idea might be to have this text rewrite itself to various declarations.</p>
 <p>But how should it go about doing this?</p>
-<p>I wanted it to look like the text was being edited, so immediately I thought of the Levenshtein-distance algorithm.</p>
+<p>I wanted it to look like the text was being edited.</p>
+<p>This made me think of the Levenshtein-distance algorithm.</p>
 </section>
 </section>
-<section id="what-is-it" class="level1">
-<h1>What is it?</h1>
+<section id="levenshtein" class="level1">
+<h1>Levenshtein?</h1>
 <section id="an-edit-distance" class="level2">
 <h2>An Edit-Distance</h2>
 <p class="transition" data-to="Between two things">
 Between two strings
 </p>
-<p>Imagine that you had to edit one string into another, with costs associated with editor actions.</p>
+<p>Imagine editing one string into another.</p>
+<p>Each edit-action is associated with a cost.</p>
 <ul>
 <li>Movement costs 0 points</li>
 <li>Replacement, Deletion, and Insertion cost 1 point</li>
@@ -112,28 +114,140 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <li>Approximate</li>
 </ul>
 </section>
-<section id="but-crucially...-we-are-interested-in-reconstructing-the-edits" class="level2">
-<h2>But crucially... We are interested in reconstructing the edits!</h2>
+<section id="but-crucially..." class="level2">
+<h2>But crucially...</h2>
+<p>We are interested in reconstructing the edits!</p>
 <p>A score isn't enough on its own, as the design goal is to have the intermediate edits of the text displayed to the user.</p>
+<p>This rules out the most optimal solutions.</p>
+<p>However, we can still use...</p>
 </section>
 <section id="full-matrix" class="level2">
 <h2>Full-Matrix</h2>
-<p>The full-matrix implementation of Levenshtein-distance allows for this.</p>
+<p>The full-matrix implementation of Levenshtein-distance allows for reconstructing intermediate edits.</p>
 </section>
-<section id="full-matrix-implementation" class="level2">
-<h2>Full-Matrix Implementation</h2>
-<p>The values in the matrix describe the score for the edits to that point.</p>
+</section>
+<section id="full-matrix-1" class="level1">
+<h1>Full-Matrix</h1>
+<section id="the-values-in-the-matrix-describe-the-edit-score." class="level2">
+<h2>The values in the matrix describe the edit score.</h2>
+<pre><code>                     --&gt; Insertion
+              TO: R  A  B  B  I  T       Example: &quot;CAT&quot; -&gt; &quot;RABBIT&quot;
+
+             +--+--+--+--+--+--+--+      Cells contain a score
+             | 0| 1| 2| 3| 4| 5| 6|      that indicates
+             +--+--+--+--+--+--+--+      the cost of editing
+     FROM: C | 1| ?| ?| ?| ?| ?| ?|      up to that point.
+             +--+--+--+--+--+--+--+
+        |  A | 2| ?| ?| ?| ?| ?| ?|      The point being M[i,j]
+        v    +--+--+--+--+--+--+--+      where &#39;i&#39; represents the
+ Deletion  T | 3| ?| ?| ?| ?| ?| ?|      the index into the &#39;to&#39;
+             +--+--+--+--+--+--+--+      word, and &#39;j&#39; the &#39;from&#39;.</code></pre>
+<p>Trivially, also works transposed due to symmetry.</p>
+</section>
+<section id="arbitrary-cell" class="level2">
+<h2>Arbitrary Cell</h2>
+<p>For any individual cell, the score can be derived in four possible ways, corresponding to four possible edits.</p>
 <pre><code>+---------+---------+
+|         |         |  Options include:
+|   &lt;----\|    ^    |
+|   N,S   \  D |    |  * (N) Nothing       (+0 Points )
+|         |\   |    |  * (S) Substitution  (+1 Point  )
++---------+-\ -| ---+  * (D) Deletion      (+1 Point  )
+|         |  \ |    |  * (I) Insertion     (+1 Point  )
+|   I     |   \|    |
+|   &lt;----------?    |  (N) only if From[j] = To[i]
 |         |         |
-|   &lt;---- |    ^    |  Options include:
-|   N/S   \  I |    |
-|         |\   |    |  * (N) Nothing
-+---------+-\ -| ---+  * (S) Substitution
-|         |  \ |    |  * (I) Insertion
-|   D     |   \|    |  * (D) Deletion
-|   &lt;----------?    |
-|         |         |
-+---------+---------+</code></pre>
++---------+---------+  Pick the minimum option!</code></pre>
+</section>
+<section id="first-row-and-column" class="level2">
+<h2>First-Row and Column</h2>
+<pre><code>    +---------+
+    |         | &quot;First Column&quot;
+    |    ^    |                           &quot;First Row&quot;
+    |  D |    |    Options include:       +---------+---------+
+    |    |    |                           |         |         |
+    +-- -| ---+    * (I) Insertion (+1)   |   I     |         |
+    |    |    |    * (D) Deletion  (+1)   |   &lt;--------M[i,0] |
+    |    |    |                           |         |         |
+    | M[0,j]  |                           +---------+---------+
+    |         |
+    +---------+</code></pre>
+<ul>
+<li>M[0,0] has a score of 0,</li>
+<li>Only Insertion/Deletion apply for M[i,0] and M[0,j]</li>
+<li>∴ M[i,0] = i and M[0,j] = j</li>
+</ul>
+</section>
+<section id="inductive-definition" class="level2">
+<h2>Inductive Definition</h2>
+<p>This is enough to give us a minimal inductive definition for the scores of all cells of the matrix!</p>
+<p>For String F, String T:</p>
+<ul>
+<li>M[0,0] = 0</li>
+<li>M[i,j] = M[i-1,j-1] if F[j] = T[i], otherwise</li>
+<li>M[i,j] = 1 + Minimum( M[i,j-1], M[i-1,j], M[i-1,j-1] )</li>
+</ul>
+</section>
+<section id="spanning-tree" class="level2">
+<h2>Spanning Tree</h2>
+<table>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span style="color:red;">0</span></td>
+<td style="text-align: left;"><span style="color:red;">←</span></td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">←</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">↑</td>
+<td style="text-align: left;">↑</td>
+<td style="text-align: left;"><span style="color:red;">↖</span></td>
+<td style="text-align: left;"><span style="color:red;">↑</span></td>
+<td style="text-align: left;"><span style="color:red;">←</span></td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">←</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">↑</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">↖</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;"><span style="color:red;">↖</span></td>
+<td style="text-align: left;"><span style="color:red;">←</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">↑</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">↑</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;">↑</td>
+<td style="text-align: left;">←</td>
+<td style="text-align: left;"><span style="color:red;">↑</span></td>
+</tr>
+</tbody>
+</table>
+<p>You can visualise this induction as a tree originating from the first cell of M.</p>
+</section>
+<section id="the-final-score" class="level2">
+<h2>The Final Score</h2>
+<p>For Words 'F', 'T':</p>
+<p>The final score is the value in the last cell...</p>
+<p>M[Length(T), Length(F)]</p>
+</section>
+</section>
+<section id="reconstruction" class="level1">
+<h1>Reconstruction</h1>
+<section id="we-dont-just-want-the-score..." class="level2">
+<h2>We don't just want the score...</h2>
+<pre><code>           {
+             score :: Int,
+             state :: Text
+           }</code></pre>
+<p>Since the branching corresponds to semantic editing actions, you can keep an editing state in each cell, rather than just track the score.</p>
 </section>
 </section>
 <section id="memoization" class="level1">

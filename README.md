@@ -22,16 +22,19 @@ declarations.
 
 But how should it go about doing this?
 
-I wanted it to look like the text was being edited, so immediately I thought of
-the Levenshtein-distance algorithm.
+I wanted it to look like the text was being edited.
 
-# What is it?
+This made me think of the Levenshtein-distance algorithm.
+
+# Levenshtein?
 
 ## An Edit-Distance
 
 <p class="transition" data-to="Between two things">Between two strings</p>
 
-Imagine that you had to edit one string into another, with costs associated with editor actions.
+Imagine editing one string into another.
+
+Each edit-action is associated with a cost.
 
 * Movement costs 0 points
 * Replacement, Deletion, and Insertion cost 1 point
@@ -60,30 +63,119 @@ Levenshtein-distance finds the smallest edit distance.
 * Two row itterative matrix
 * Approximate
 
-## But crucially... We are interested in reconstructing the edits!
+## But crucially...
+
+We are interested in reconstructing the edits!
 
 A score isn't enough on its own, as the design goal is to have
 the intermediate edits of the text displayed to the user.
 
+This rules out the most optimal solutions.
+
+However, we can still use...
+
 ## Full-Matrix
 
-The full-matrix implementation of Levenshtein-distance allows for this.
+The full-matrix implementation of Levenshtein-distance allows for
+reconstructing intermediate edits.
 
-## Full-Matrix Implementation
+# Full-Matrix
 
-The values in the matrix describe the score for the edits to that point.
+## The values in the matrix describe the edit score.
+
+                         --> Insertion
+                  TO: R  A  B  B  I  T       Example: "CAT" -> "RABBIT"
+
+                 +--+--+--+--+--+--+--+      Cells contain a score
+                 | 0| 1| 2| 3| 4| 5| 6|      that indicates
+                 +--+--+--+--+--+--+--+      the cost of editing
+         FROM: C | 1| ?| ?| ?| ?| ?| ?|      up to that point.
+                 +--+--+--+--+--+--+--+
+            |  A | 2| ?| ?| ?| ?| ?| ?|      The point being M[i,j]
+            v    +--+--+--+--+--+--+--+      where 'i' represents the
+     Deletion  T | 3| ?| ?| ?| ?| ?| ?|      the index into the 'to'
+                 +--+--+--+--+--+--+--+      word, and 'j' the 'from'.
+
+Trivially, also works transposed due to symmetry.
+
+## Arbitrary Cell
+
+For any individual cell, the score can be derived in four possible ways,
+corresponding to four possible edits.
 
     +---------+---------+
+    |         |         |  Options include:
+    |   <----\|    ^    |
+    |   N,S   \  D |    |  * (N) Nothing       (+0 Points )
+    |         |\   |    |  * (S) Substitution  (+1 Point  )
+    +---------+-\ -| ---+  * (D) Deletion      (+1 Point  )
+    |         |  \ |    |  * (I) Insertion     (+1 Point  )
+    |   I     |   \|    |
+    |   <----------?    |  (N) only if From[j] = To[i]
     |         |         |
-    |   <---- |    ^    |  Options include:
-    |   N/S   \  I |    |
-    |         |\   |    |  * (N) Nothing
-    +---------+-\ -| ---+  * (S) Substitution
-    |         |  \ |    |  * (I) Insertion
-    |   D     |   \|    |  * (D) Deletion
-    |   <----------?    |
-    |         |         |
-    +---------+---------+
+    +---------+---------+  Pick the minimum option!
+
+## First-Row and Column
+
+        +---------+
+        |         | "First Column"
+        |    ^    |                           "First Row"
+        |  D |    |    Options include:       +---------+---------+
+        |    |    |                           |         |         |
+        +-- -| ---+    * (I) Insertion (+1)   |   I     |         |
+        |    |    |    * (D) Deletion  (+1)   |   <--------M[i,0] |
+        |    |    |                           |         |         |
+        | M[0,j]  |                           +---------+---------+
+        |         |
+        +---------+
+
+* M[0,0] has a score of 0,
+* Only Insertion/Deletion apply for M[i,0] and M[0,j]
+* &#8756; M[i,0] = i and M[0,j] = j
+
+## Inductive Definition
+
+This is enough to give us a minimal inductive definition for the
+scores of all cells of the matrix!
+
+For String F, String T:
+
+* M[0,0] = 0
+* M[i,j] = M[i-1,j-1] if F[j] = T[i], otherwise
+* M[i,j] = 1 + Minimum( M[i,j-1], M[i-1,j], M[i-1,j-1] )
+
+## Spanning Tree
+
+| | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- |
+| <span style="color:red;">0</span> | <span style="color:red;">←</span> | ← | ← | ← | ← | ←
+| ↑ | ↑ | <span style="color:red;">↖</span> | <span style="color:red;">↑</span> | <span style="color:red;">←</span> | ← | ←
+| ↑ | ← | ↖ | ← | ← | <span style="color:red;">↖</span> | <span style="color:red;">←</span>
+| ↑ | ← | ↑ | ← | ↑ | ← | <span style="color:red;">↑</span>
+
+You can visualise this induction as a tree originating from the first cell of
+M.
+
+## The Final Score
+
+For Words 'F', 'T':
+
+The final score is the value in the last cell...
+
+M[Length(T), Length(F)]
+
+# Reconstruction
+
+## We don't just want the score...
+
+               {
+                 score :: Int,
+                 state :: Text
+               }
+
+Since the branching corresponds to semantic editing actions,
+you can keep an editing state in each cell, rather than just track
+the score.
 
 # Memoization
 
