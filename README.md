@@ -59,8 +59,9 @@ Levenshtein-distance finds the smallest edit distance.
 ## Various Implementations
 
 * Naively Recursive
+* Optimised Recursive
 * Full Matrix
-* Two row itterative matrix
+* Two row iterative matrix
 * Approximate
 
 ## But crucially...
@@ -109,10 +110,10 @@ corresponding to four possible edits.
     |   N,S   \  D |    |  * (N) Nothing       (+0 Points )
     |         |\   |    |  * (S) Substitution  (+1 Point  )
     +---------+-\ -| ---+  * (D) Deletion      (+1 Point  )
-    |         |  \ |    |  * (I) Insertion     (+1 Point  )
-    |   I     |   \|    |
-    |   <----------?    |  (N) only if From[j] = To[i]
-    |         |         |
+    |         |  \ |   ||  * (I) Insertion     (+1 Point  )
+    |   I     |   \|   ||
+    |   <----------?   ||  (N) only if From[j] = To[i]
+    |         |________||
     +---------+---------+  Pick the minimum option!
 
 ## First-Row and Column
@@ -121,12 +122,12 @@ corresponding to four possible edits.
         |         | "First Column"
         |    ^    |                           "First Row"
         |  D |    |    Options include:       +---------+---------+
-        |    |    |                           |         |         |
-        +-- -| ---+    * (I) Insertion (+1)   |   I     |         | .
-        |    |    |    * (D) Deletion  (+1)   |   <--------M[i,0] | .
-        |    |    | .                         |         |         | .
+        |    |    |                           |         |        ||
+        +-- -| ---+    * (I) Insertion (+1)   |   I     |        || .
+        |    |    |    * (D) Deletion  (+1)   |   <-------M[i,0] || .
         | M[0,j]  | .                         +---------+---------+
-        |         | .                          .  .  .
+        |         | .                         |         |         | .
+        |_________| .                          .  .  .
         +---------+
           .  .  .
 
@@ -157,6 +158,54 @@ For String F, String T:
 You can visualise this induction as a tree originating from the first cell of
 M.
 
+## Spanning Tree
+
+<!--
+
+digraph {
+  rankdir=LR;
+  M_0_0 [color=red];
+  M_0_1 [color=red];
+  M_0_1 -> M_0_0;
+  M_0_2 -> M_0_1;
+  M_0_3 -> M_0_2;
+  M_1_0 -> M_0_0;
+  M_1_1 -> M_1_0;
+  M_1_2 -> M_0_2;
+  M_1_3 -> M_0_3;
+  M_2_0 -> M_1_0;
+  M_2_1 [color=red];
+  M_2_1 -> M_0_1;
+  M_2_2 -> M_1_1;
+  M_2_3 -> M_2_2;
+  M_3_0 -> M_2_0;
+  M_3_1 [color=red];
+  M_3_1 -> M_2_1;
+  M_3_2 -> M_2_2;
+  M_3_3 -> M_2_3;
+  M_4_0 -> M_3_0;
+  M_4_1 [color=red];
+  M_4_1 -> M_3_1;
+  M_4_2 -> M_3_2;
+  M_4_3 -> M_4_2;
+  M_5_0 -> M_4_0;
+  M_5_1 -> M_4_1;
+  M_5_2 [color=red];
+  M_5_2 -> M_4_1;
+  M_5_3 -> M_4_3;
+  M_6_0 -> M_5_0;
+  M_6_1 -> M_5_1;
+  M_6_2 [color=red];
+  M_6_2 -> M_5_2;
+  M_6_3 [color=red];
+  M_6_3 -> M_6_2;
+}
+
+-->
+
+![](images/spanning_tree.png)
+
+
 ## The Final Score
 
 For words F, T:
@@ -168,22 +217,32 @@ M[Length(T), Length(F)]
 ## Code
 
     mft f t   = m where
-      m       = array b [ ((i, j), lev i j) | (i,j) <- range b ]
-      b       = ((0, 0), (length t, length f))
+      m       = array bounds [((i,j), lev i j) | (i,j) <- range bounds]
+      bounds  = ((0, 0), (length t, length f))
       lev 0 0 = 0
       lev 0 j = succ $ m ! (0     , pred j)
       lev i 0 = succ $ m ! (pred i, 0     )
-      lev i j | match     = m ! (pred i, pred j)
-              | otherwise = 1 + minimum [ left, up, diag ]
-          where
-          match = (f !! pred j) == (t !! pred i)
-          left  = m ! (pred i,      j)
-          up    = m ! (     i, pred j)
-          diag  = m ! (pred i, pred j)
+      lev i j | (f !! p j) == (t !! p i) = m!(p i,p j)
+              | True = 1 + minimum [m!(p i,j), m!(i,p j), m!(p i,p j)]
 
-    score f t = mft f t ! (length t, length f)
+    p         = pred
+    score f t = let m = mft f t in m ! snd (bounds m)
 
 Almost a literal translation.
+
+# Memoization
+
+## Recursion Through M
+
+    mft f t   = m where
+      ...
+      m       = array   ...
+      lev i j = ... m ! ...
+
+All data-recursion passes through the array structure.
+
+This acts as a nexus of memoization ensuring that any particular cell
+is only calculated once.
 
 # Reconstruction
 
@@ -195,23 +254,165 @@ the score.
 
 ## We want the state.
 
+And a cursor position...
+
         data Cell = C {
-                    score :: Int,
-                    state :: Text
+                    score  :: Int,
+                    state  :: Text,
+                    cursor :: Int
                   }
 
 ## And we want a path
 
         type Path = [ Cell ]
 
-## Then we can adjust our functions
+## Functions Adjusted
 
 To deal with paths rather than scores.
 
-# Memoization
+    scoreH, stateH, charH, targetH :: [Cell] -> N.Nat
+    ...
 
-## asdf
+    iM, dM, sM, nM :: Array (Int,Int) [Cell] -> Int -> Int -> [Cell]
+    ...
+
+    levensteini :: String -> String -> [Cell]
+    levensteini a b = ...
+      mini = minimumBy (comparing scoreH)
+
+      lev i j | (ind a j) == (ind b i) = nM m i j
+              | otherwise = mini [iM m i j, dM m i j, sM m i j]
+
+## Zippers are Also an Option
+
+Eliminating cursor indexes.
+
+    type Text = Zipper Char
+
+    iT, sT :: Char -> Text -> Text
+    ...
+
+    dT, nT :: Text -> Text
+    ...
+
+    data Cell = C { state  :: Text
+                  , target :: Text
+                  , score  :: N.Nat } deriving (Eq, Show)
+
+
+## We return our tree of paths
+
+The last-cell path can be walked to reconstruct the edits.
+
+<!--
+
+digraph {
+  rankdir=RL;
+  M_0_0 [color=red];
+  M_0_1 [color=red];
+  M_0_1 -> M_0_0;
+  M_2_1 [color=red];
+  M_2_1 -> M_0_1;
+  M_3_1 [color=red];
+  M_3_1 -> M_2_1;
+  M_4_1 [color=red];
+  M_4_1 -> M_3_1;
+  M_5_2 [color=red];
+  M_5_2 -> M_4_1;
+  M_6_2 [color=red];
+  M_6_2 -> M_5_2;
+  M_6_3 [color=red];
+  M_6_3 -> M_6_2;
+}
+
+-->
+
+![](images/path.png)
+
+Then pruned for NOPs and reversed.
+
+<!--
+
+digraph {
+  rankdir=LR;
+  CAT -> RAT;
+  RAT -> RABT;
+  RABT -> RABBT;
+  RABBT -> RABBIT;
+}
+
+
+-->
+
+![](images/path_reversed.png)
 
 # Laziness
 
-## Bli bla
+## Haskell is Lazy
+
+Maybe we can gain something simply because Haskell is a lazy language!
+
+## Matrix Laziness
+
+![](images/lazy_min.png)
+
+## Looks good
+
+This looks good, since for any particular cell, we only need to compute the
+cells above and to the left.
+
+## Why it Isn't so Lazy
+
+![](images/strict_min.png)
+
+## Denied by our Desires
+
+But since we want the value of the bottom-right cell, this means that we
+have to compute the entire matrix anyway...
+
+... Unless...
+
+## Natural Laziness
+
+However, in Haskell, numbers can be lazy!
+
+    import qualified Number.Peano.Inf as P
+    import qualified Data.Number.Nat  as N
+
+## Allowing for our `min` call to be lazily applied
+
+![](images/shortest_rope.png)
+
+## Does it work?
+
+Doesn't seem to...
+
+![](images/plots.png)
+
+## Why?
+
+Not sure, I believe that it should, so we'll have to dig in another time.
+
+# Big Wins
+
+## Expression of Cyclic Structures
+
+The ability to define your structures as if they were already there!
+
+## Memoization Through Nexuses
+
+Taking advantage of indexed data-structures for memoization feels natural.
+
+# Thanks for Coming!
+
+## Links
+
+<!-- <p class="transition" data-to="bli">bla</p> -->
+
+* [This Talk on Github](https://github.com/sordina/mfug_levenshtein_difference_2016_07_07-)
+* [Levenshtein Transitions jQuery Library](https://github.com/sordina/levenshtein-transition)
+* [Edit-Distance on Haskell Wiki](https://wiki.haskell.org/Edit_distance)
+* [edit-distance on Hackage](https://hackage.haskell.org/package/edit-distance)
+* Did you know about [Compose :: Melbourne???](http://www.composeconference.org/)
+    - Stickers
+    - Speakers

@@ -109,8 +109,9 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <h2>Various Implementations</h2>
 <ul>
 <li>Naively Recursive</li>
+<li>Optimised Recursive</li>
 <li>Full Matrix</li>
-<li>Two row itterative matrix</li>
+<li>Two row iterative matrix</li>
 <li>Approximate</li>
 </ul>
 </section>
@@ -153,10 +154,10 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 |   N,S   \  D |    |  * (N) Nothing       (+0 Points )
 |         |\   |    |  * (S) Substitution  (+1 Point  )
 +---------+-\ -| ---+  * (D) Deletion      (+1 Point  )
-|         |  \ |    |  * (I) Insertion     (+1 Point  )
-|   I     |   \|    |
-|   &lt;----------?    |  (N) only if From[j] = To[i]
-|         |         |
+|         |  \ |   ||  * (I) Insertion     (+1 Point  )
+|   I     |   \|   ||
+|   &lt;----------?   ||  (N) only if From[j] = To[i]
+|         |________||
 +---------+---------+  Pick the minimum option!</code></pre>
 </section>
 <section id="first-row-and-column" class="level2">
@@ -165,12 +166,12 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
     |         | &quot;First Column&quot;
     |    ^    |                           &quot;First Row&quot;
     |  D |    |    Options include:       +---------+---------+
-    |    |    |                           |         |         |
-    +-- -| ---+    * (I) Insertion (+1)   |   I     |         | .
-    |    |    |    * (D) Deletion  (+1)   |   &lt;--------M[i,0] | .
-    |    |    | .                         |         |         | .
+    |    |    |                           |         |        ||
+    +-- -| ---+    * (I) Insertion (+1)   |   I     |        || .
+    |    |    |    * (D) Deletion  (+1)   |   &lt;-------M[i,0] || .
     | M[0,j]  | .                         +---------+---------+
-    |         | .                          .  .  .
+    |         | .                         |         |         | .
+    |_________| .                          .  .  .
     +---------+
       .  .  .</code></pre>
 <ul>
@@ -233,6 +234,54 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 </table>
 <p>You can visualise this induction as a tree originating from the first cell of M.</p>
 </section>
+<section id="spanning-tree-1" class="level2">
+<h2>Spanning Tree</h2>
+<!--
+
+digraph {
+  rankdir=LR;
+  M_0_0 [color=red];
+  M_0_1 [color=red];
+  M_0_1 -> M_0_0;
+  M_0_2 -> M_0_1;
+  M_0_3 -> M_0_2;
+  M_1_0 -> M_0_0;
+  M_1_1 -> M_1_0;
+  M_1_2 -> M_0_2;
+  M_1_3 -> M_0_3;
+  M_2_0 -> M_1_0;
+  M_2_1 [color=red];
+  M_2_1 -> M_0_1;
+  M_2_2 -> M_1_1;
+  M_2_3 -> M_2_2;
+  M_3_0 -> M_2_0;
+  M_3_1 [color=red];
+  M_3_1 -> M_2_1;
+  M_3_2 -> M_2_2;
+  M_3_3 -> M_2_3;
+  M_4_0 -> M_3_0;
+  M_4_1 [color=red];
+  M_4_1 -> M_3_1;
+  M_4_2 -> M_3_2;
+  M_4_3 -> M_4_2;
+  M_5_0 -> M_4_0;
+  M_5_1 -> M_4_1;
+  M_5_2 [color=red];
+  M_5_2 -> M_4_1;
+  M_5_3 -> M_4_3;
+  M_6_0 -> M_5_0;
+  M_6_1 -> M_5_1;
+  M_6_2 [color=red];
+  M_6_2 -> M_5_2;
+  M_6_3 [color=red];
+  M_6_3 -> M_6_2;
+}
+
+-->
+<figure>
+<img src="images/spanning_tree.png" alt="" />
+</figure>
+</section>
 <section id="the-final-score" class="level2">
 <h2>The Final Score</h2>
 <p>For words F, T:</p>
@@ -242,21 +291,29 @@ hel▻lo world 0  hello s▻world 1  hello swir▻ld 0</code></pre>
 <section id="code" class="level2">
 <h2>Code</h2>
 <pre><code>mft f t   = m where
-  m       = array b [ ((i, j), lev i j) | (i,j) &lt;- range b ]
-  b       = ((0, 0), (length t, length f))
+  m       = array bounds [((i,j), lev i j) | (i,j) &lt;- range bounds]
+  bounds  = ((0, 0), (length t, length f))
   lev 0 0 = 0
   lev 0 j = succ $ m ! (0     , pred j)
   lev i 0 = succ $ m ! (pred i, 0     )
-  lev i j | match     = m ! (pred i, pred j)
-          | otherwise = 1 + minimum [ left, up, diag ]
-      where
-      match = (f !! pred j) == (t !! pred i)
-      left  = m ! (pred i,      j)
-      up    = m ! (     i, pred j)
-      diag  = m ! (pred i, pred j)
+  lev i j | (f !! p j) == (t !! p i) = m!(p i,p j)
+          | True = 1 + minimum [m!(p i,j), m!(i,p j), m!(p i,p j)]
 
-score f t = mft f t ! (length t, length f)</code></pre>
+p         = pred
+score f t = let m = mft f t in m ! snd (bounds m)</code></pre>
 <p>Almost a literal translation.</p>
+</section>
+</section>
+<section id="memoization" class="level1">
+<h1>Memoization</h1>
+<section id="recursion-through-m" class="level2">
+<h2>Recursion Through M</h2>
+<pre><code>mft f t   = m where
+  ...
+  m       = array   ...
+  lev i j = ... m ! ...</code></pre>
+<p>All data-recursion passes through the array structure.</p>
+<p>This acts as a nexus of memoization ensuring that any particular cell is only calculated once.</p>
 </section>
 </section>
 <section id="reconstruction" class="level1">
@@ -267,30 +324,172 @@ score f t = mft f t ! (length t, length f)</code></pre>
 </section>
 <section id="we-want-the-state." class="level2">
 <h2>We want the state.</h2>
+<p>And a cursor position...</p>
 <pre><code>    data Cell = C {
-                score :: Int,
-                state :: Text
+                score  :: Int,
+                state  :: Text,
+                cursor :: Int
               }</code></pre>
 </section>
 <section id="and-we-want-a-path" class="level2">
 <h2>And we want a path</h2>
 <pre><code>    type Path = [ Cell ]</code></pre>
 </section>
-<section id="then-we-can-adjust-our-functions" class="level2">
-<h2>Then we can adjust our functions</h2>
+<section id="functions-adjusted" class="level2">
+<h2>Functions Adjusted</h2>
 <p>To deal with paths rather than scores.</p>
+<pre><code>scoreH, stateH, charH, targetH :: [Cell] -&gt; N.Nat
+...
+
+iM, dM, sM, nM :: Array (Int,Int) [Cell] -&gt; Int -&gt; Int -&gt; [Cell]
+...
+
+levensteini :: String -&gt; String -&gt; [Cell]
+levensteini a b = ...
+  mini = minimumBy (comparing scoreH)
+
+  lev i j | (ind a j) == (ind b i) = nM m i j
+          | otherwise = mini [iM m i j, dM m i j, sM m i j]</code></pre>
 </section>
+<section id="zippers-are-also-an-option" class="level2">
+<h2>Zippers are Also an Option</h2>
+<p>Eliminating cursor indexes.</p>
+<pre><code>type Text = Zipper Char
+
+iT, sT :: Char -&gt; Text -&gt; Text
+...
+
+dT, nT :: Text -&gt; Text
+...
+
+data Cell = C { state  :: Text
+              , target :: Text
+              , score  :: N.Nat } deriving (Eq, Show)</code></pre>
 </section>
-<section id="memoization" class="level1">
-<h1>Memoization</h1>
-<section id="asdf" class="level2">
-<h2>asdf</h2>
+<section id="we-return-our-tree-of-paths" class="level2">
+<h2>We return our tree of paths</h2>
+<p>The last-cell path can be walked to reconstruct the edits.</p>
+<!--
+
+digraph {
+  rankdir=RL;
+  M_0_0 [color=red];
+  M_0_1 [color=red];
+  M_0_1 -> M_0_0;
+  M_2_1 [color=red];
+  M_2_1 -> M_0_1;
+  M_3_1 [color=red];
+  M_3_1 -> M_2_1;
+  M_4_1 [color=red];
+  M_4_1 -> M_3_1;
+  M_5_2 [color=red];
+  M_5_2 -> M_4_1;
+  M_6_2 [color=red];
+  M_6_2 -> M_5_2;
+  M_6_3 [color=red];
+  M_6_3 -> M_6_2;
+}
+
+-->
+<figure>
+<img src="images/path.png" alt="" />
+</figure>
+<p>Then pruned for NOPs and reversed.</p>
+<!--
+
+digraph {
+  rankdir=LR;
+  CAT -> RAT;
+  RAT -> RABT;
+  RABT -> RABBT;
+  RABBT -> RABBIT;
+}
+
+
+-->
+<figure>
+<img src="images/path_reversed.png" alt="" />
+</figure>
 </section>
 </section>
 <section id="laziness" class="level1">
 <h1>Laziness</h1>
-<section id="bli-bla" class="level2">
-<h2>Bli bla</h2>
+<section id="haskell-is-lazy" class="level2">
+<h2>Haskell is Lazy</h2>
+<p>Maybe we can gain something simply because Haskell is a lazy language!</p>
+</section>
+<section id="matrix-laziness" class="level2">
+<h2>Matrix Laziness</h2>
+<figure>
+<img src="images/lazy_min.png" alt="" />
+</figure>
+</section>
+<section id="looks-good" class="level2">
+<h2>Looks good</h2>
+<p>This looks good, since for any particular cell, we only need to compute the cells above and to the left.</p>
+</section>
+<section id="why-it-isnt-so-lazy" class="level2">
+<h2>Why it Isn't so Lazy</h2>
+<figure>
+<img src="images/strict_min.png" alt="" />
+</figure>
+</section>
+<section id="denied-by-our-desires" class="level2">
+<h2>Denied by our Desires</h2>
+<p>But since we want the value of the bottom-right cell, this means that we have to compute the entire matrix anyway...</p>
+<p>... Unless...</p>
+</section>
+<section id="natural-laziness" class="level2">
+<h2>Natural Laziness</h2>
+<p>However, in Haskell, numbers can be lazy!</p>
+<pre><code>import qualified Number.Peano.Inf as P
+import qualified Data.Number.Nat  as N</code></pre>
+</section>
+<section id="allowing-for-our-min-call-to-be-lazily-applied" class="level2">
+<h2>Allowing for our <code>min</code> call to be lazily applied</h2>
+<figure>
+<img src="images/shortest_rope.png" alt="" />
+</figure>
+</section>
+<section id="does-it-work" class="level2">
+<h2>Does it work?</h2>
+<p>Doesn't seem to...</p>
+<figure>
+<img src="images/plots.png" alt="" />
+</figure>
+</section>
+<section id="why" class="level2">
+<h2>Why?</h2>
+<p>Not sure, I believe that it should, so we'll have to dig in another time.</p>
+</section>
+</section>
+<section id="big-wins" class="level1">
+<h1>Big Wins</h1>
+<section id="expression-of-cyclic-structures" class="level2">
+<h2>Expression of Cyclic Structures</h2>
+<p>The ability to define your structures as if they were already there!</p>
+</section>
+<section id="memoization-through-nexuses" class="level2">
+<h2>Memoization Through Nexuses</h2>
+<p>Taking advantage of indexed data-structures for memoization feels natural.</p>
+</section>
+</section>
+<section id="thanks-for-coming" class="level1">
+<h1>Thanks for Coming!</h1>
+<section id="links" class="level2">
+<h2>Links</h2>
+<!-- <p class="transition" data-to="bli">bla</p> -->
+<ul>
+<li><a href="https://github.com/sordina/mfug_levenshtein_difference_2016_07_07-">This Talk on Github</a></li>
+<li><a href="https://github.com/sordina/levenshtein-transition">Levenshtein Transitions jQuery Library</a></li>
+<li><a href="https://wiki.haskell.org/Edit_distance">Edit-Distance on Haskell Wiki</a></li>
+<li><a href="https://hackage.haskell.org/package/edit-distance">edit-distance on Hackage</a></li>
+<li>Did you know about <a href="http://www.composeconference.org/">Compose :: Melbourne???</a>
+<ul>
+<li>Stickers</li>
+<li>Speakers</li>
+</ul></li>
+</ul>
 </section>
 </section>
 </div>

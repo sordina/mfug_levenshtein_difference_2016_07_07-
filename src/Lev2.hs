@@ -1,8 +1,9 @@
-module Lev1 where
+module Lev2 where
 
 import Data.Array
+import qualified Data.Number.Nat as N
 
-mft :: String -> String -> Array (Int, Int) Int
+mft :: String -> String -> Array (Int, Int) N.Nat
 mft f t   = m where
   m       = array bounds [ ((i, j), lev i j) | (i,j) <- range bounds ]
   bounds  = ((0, 0), (length t, length f))
@@ -13,6 +14,6 @@ mft f t   = m where
           | otherwise = 1 + minimum [ m!(p i,j), m!(i,p j), m!(p i,p j) ]
 
 score :: String -> String -> Int
-score f t = let m = mft f t in m ! snd (bounds m)
+score f t = let m = mft f t in fromIntegral $ m ! snd (bounds m)
 
 p = pred

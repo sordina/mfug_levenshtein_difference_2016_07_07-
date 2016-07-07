@@ -15,8 +15,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
-  build-depends:       base >= 4.7 && < 5
+  exposed-modules:     Lib, Lev1, Lev2, Lev3
+  build-depends:       base >= 4.7 && < 5, criterion, array, nat, peano-inf
   default-language:    Haskell2010
 
 executable LevenshteinDifference-exe
@@ -25,6 +25,16 @@ executable LevenshteinDifference-exe
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , LevenshteinDifference
+                     , criterion
+  default-language:    Haskell2010
+
+executable LevenshteinDifference-bench
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , LevenshteinDifference
+                     , criterion
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
 test-suite LevenshteinDifference-test
@@ -33,6 +43,7 @@ test-suite LevenshteinDifference-test
   main-is:             Spec.hs
   build-depends:       base
                      , LevenshteinDifference
+                     , criterion
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
