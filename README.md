@@ -367,6 +367,13 @@ digraph {
 
 ![](images/path_reversed.png)
 
+## Complexity
+
+This is still at least O(f*t).
+
+    for(var row = 1; row <= f.length; row++){...
+      for(var col = 1; col <= t.length; col++){...
+
 # Laziness
 
 ## Haskell is Lazy
