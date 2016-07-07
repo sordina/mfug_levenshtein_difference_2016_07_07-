@@ -214,7 +214,24 @@ The final score is the value in the last cell...
 
 M[Length(T), Length(F)]
 
-## Code
+## Imperative Code
+
+    for(var row = 1; row <= a.length; row++){
+      ...
+      for(var col = 1; col <= b.length; col++){
+        ...
+        if(b.charAt(i) == a.charAt(j)){
+          words[row][col] = nop(words[row-1][col-1])
+        } else {
+          ...
+          switch(m) {
+            case z:
+              words[row][col] = deletion(words[row-1][col]);
+              ...
+          } } } }
+
+
+## Lazy Functional Code
 
     mft f t   = m where
       m       = array bounds [((i,j), lev i j) | (i,j) <- range bounds]
@@ -241,8 +258,12 @@ Almost a literal translation.
 
 All data-recursion passes through the array structure.
 
+## Recursion Through M
+
 This acts as a nexus of memoization ensuring that any particular cell
 is only calculated once.
+
+![](images/cyclic_references.png)
 
 # Reconstruction
 
@@ -407,12 +428,13 @@ Taking advantage of indexed data-structures for memoization feels natural.
 
 ## Links
 
-<!-- <p class="transition" data-to="bli">bla</p> -->
-
 * [This Talk on Github](https://github.com/sordina/mfug_levenshtein_difference_2016_07_07-)
 * [Levenshtein Transitions jQuery Library](https://github.com/sordina/levenshtein-transition)
 * [Edit-Distance on Haskell Wiki](https://wiki.haskell.org/Edit_distance)
-* [edit-distance on Hackage](https://hackage.haskell.org/package/edit-distance)
+* [edit-distance](https://hackage.haskell.org/package/edit-distance),
+   [Peano-Inf](https://hackage.haskell.org/package/peano-inf),
+   [Nat](https://hackage.haskell.org/package/nat)
+   on Hackage
 * Did you know about [Compose :: Melbourne???](http://www.composeconference.org/)
-    - Stickers
-    - Speakers
+    - <p class="transition" data-to="Speakers">Stickers</p>
+

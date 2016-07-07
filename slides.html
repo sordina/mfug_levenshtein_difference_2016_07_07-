@@ -288,8 +288,24 @@ digraph {
 <p>The final score is the value in the last cell...</p>
 <p>M[Length(T), Length(F)]</p>
 </section>
-<section id="code" class="level2">
-<h2>Code</h2>
+<section id="imperative-code" class="level2">
+<h2>Imperative Code</h2>
+<pre><code>for(var row = 1; row &lt;= a.length; row++){
+  ...
+  for(var col = 1; col &lt;= b.length; col++){
+    ...
+    if(b.charAt(i) == a.charAt(j)){
+      words[row][col] = nop(words[row-1][col-1])
+    } else {
+      ...
+      switch(m) {
+        case z:
+          words[row][col] = deletion(words[row-1][col]);
+          ...
+      } } } }</code></pre>
+</section>
+<section id="lazy-functional-code" class="level2">
+<h2>Lazy Functional Code</h2>
 <pre><code>mft f t   = m where
   m       = array bounds [((i,j), lev i j) | (i,j) &lt;- range bounds]
   bounds  = ((0, 0), (length t, length f))
@@ -313,7 +329,13 @@ score f t = let m = mft f t in m ! snd (bounds m)</code></pre>
   m       = array   ...
   lev i j = ... m ! ...</code></pre>
 <p>All data-recursion passes through the array structure.</p>
+</section>
+<section id="recursion-through-m-1" class="level2">
+<h2>Recursion Through M</h2>
 <p>This acts as a nexus of memoization ensuring that any particular cell is only calculated once.</p>
+<figure>
+<img src="images/cyclic_references.png" alt="" />
+</figure>
 </section>
 </section>
 <section id="reconstruction" class="level1">
@@ -478,16 +500,16 @@ import qualified Data.Number.Nat  as N</code></pre>
 <h1>Thanks for Coming!</h1>
 <section id="links" class="level2">
 <h2>Links</h2>
-<!-- <p class="transition" data-to="bli">bla</p> -->
 <ul>
 <li><a href="https://github.com/sordina/mfug_levenshtein_difference_2016_07_07-">This Talk on Github</a></li>
 <li><a href="https://github.com/sordina/levenshtein-transition">Levenshtein Transitions jQuery Library</a></li>
 <li><a href="https://wiki.haskell.org/Edit_distance">Edit-Distance on Haskell Wiki</a></li>
-<li><a href="https://hackage.haskell.org/package/edit-distance">edit-distance on Hackage</a></li>
+<li><a href="https://hackage.haskell.org/package/edit-distance">edit-distance</a>, <a href="https://hackage.haskell.org/package/peano-inf">Peano-Inf</a>, <a href="https://hackage.haskell.org/package/nat">Nat</a> on Hackage</li>
 <li>Did you know about <a href="http://www.composeconference.org/">Compose :: Melbourne???</a>
 <ul>
-<li>Stickers</li>
-<li>Speakers</li>
+<li><p class="transition" data-to="Speakers">
+Stickers
+</p></li>
 </ul></li>
 </ul>
 </section>
