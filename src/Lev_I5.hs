@@ -1,5 +1,5 @@
 
-import Criterion.Main
+-- import Criterion.Main
 import Data.Array
 import Data.Ord
 import Data.List.Zipper
@@ -7,6 +7,7 @@ import Data.Aeson (encode)
 import Data.List  (minimumBy, nub)
 
 import qualified Data.Number.Nat            as N
+import qualified Number.Peano.Inf           as P
 import qualified Data.ByteString.Lazy.Char8 as LBS
 
 
@@ -96,26 +97,5 @@ pairs = zip phrases (tail phrases) ++ [(last phrases, head phrases)]
 runLev :: String -> String -> IO ()
 runLev a b = mapM_ putStrLn $ levenwords a b
 
-{-
 main :: IO ()
 main = LBS.putStrLn $ encode $ map (uncurry levenwords) pairs
--}
-
-setupEnv = do
-  let small = replicate 1000 (1 :: Int)
-  big <- map length . words <$> readFile "/usr/share/dict/words"
-  return (small, big)
-
-main :: IO ()
-main = defaultMain [
-   -- notice the lazy pattern match here!
-   env setupEnv $ \ ~(small,big) -> bgroup "main" [
-   bgroup "small" [
-     bench "length" $ whnf length small
-   , bench "length . filter" $ whnf (length . filter (==1)) small
-   ]
- ,  bgroup "big" [
-     bench "length" $ whnf length big
-   , bench "length . filter" $ whnf (length . filter (==1)) big
-   ]
- ] ]
