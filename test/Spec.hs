@@ -7,17 +7,14 @@ import qualified Lev1 as L1
 import qualified Lev2 as L2
 import qualified Lev3 as L3
 
-setupEnv :: Int -> IO (String, String)
-setupEnv s = do
-  ws <- readFile "/usr/share/dict/words"
-  return (take s ws, take s $ drop s ws)
+f t s (n, a, b) = bench (t ++ "--" ++ show n) $ nf (uncurry s) (a, b)
 
 main = do
-  s <- getEnv "STRING_SIZE"
+  ns    <- read <$> getEnv "STRING_SIZES" :: IO [Int]
+  ws    <- readFile "/usr/share/dict/words"
+  let xs = map (\n -> (n, take n ws, take n $ drop n ws)) ns
+
   defaultMain [
-   env (setupEnv (read s)) $ \ ~(a, b) -> bgroup "main" [
-     bgroup "string comparison" [
-        bench "lazy-p" $ whnf (uncurry L3.score) (a, b)
-      -- , bench "strict" $ whnf (uncurry L1.score) (a, b)
-      -- , bench "lazy"   $ whnf (uncurry L2.score) (a, b)
-      ] ] ]
+     bgroup "strict" (map (f "strict" L1.score) xs)
+   , bgroup "lazy"   (map (f "lazy"   L2.score) xs)
+   , bgroup "lazy_p" (map (f "lazy_p" L3.score) xs) ]
