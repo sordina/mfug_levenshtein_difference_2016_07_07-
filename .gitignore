@@ -1,2 +1,8 @@
 .stack-work/
 benchmark.csv
+benchmark_files/bench_data_lazy.txt
+benchmark_files/bench_data_strict.txt
+benchmark_files/bench_output_lazy_p.txt
+benchmark_files/plot_lazy.png
+benchmark_files/plot_lazy_p.png
+benchmark_files/plot_strict.png

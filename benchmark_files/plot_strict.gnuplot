@@ -4,6 +4,6 @@ set ylabel "Time"
 set xlabel "Size"
 
 set term png
-set output "plot_strict.png"
+set output "benchmark_files/plot_strict.png"
 
-plot "bench_data_strict.txt" using 1:2 with lines
+plot "benchmark_files/bench_data_strict.txt" using 1:2 with lines
